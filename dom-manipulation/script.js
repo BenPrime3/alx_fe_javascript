@@ -17,16 +17,14 @@ const quoteDisplay = document.getElementById('quoteDisplay');
 const quoteButton = document.getElementById('newQuote');
 
 
-function displayRandomQuote() {
+function showRandomQuote() {
   
   const index = Math.floor(Math.random() * quotes.length);
-  quoteDisplay.textContent = quotes[index].text
+  quoteDisplay.innerHTML = quotes[index].text
 
-}
-
-quoteButton.addEventListener('click', displayRandomQuote)
+};
 
 
-function AddQuoteForm() {
+function createAddQuoteForm() {
   
-}
+};
