@@ -1,17 +1,17 @@
-const quotes = [
-  {
-    text: "Simplicity is the ultimate sophistication.",
-    category: "design"
-  },
-  {
-    text: "Code is poetry.",
-    category: "programming"
-  },
-  {
-    text: "Discipline beats motivation.",
-    category: "life"
-  }
-];
+const quotes = JSON.parse(localStorage.getItem('quotes')) || [
+    {
+      text: "Simplicity is the ultimate sophistication.",
+      category: "design"
+    },
+    {
+      text: "Code is poetry.",
+      category: "programming"
+    },
+    {
+      text: "Discipline beats motivation.",
+      category: "life"
+    }
+  ];
 
 
 const quoteDisplay = document.getElementById("quoteDisplay");
@@ -65,8 +65,27 @@ function addQuote() {
   document.getElementById("newQuoteText").value = '';
   document.getElementById("newQuoteCategory").value = '';
 
-  showRandomQuote();
+  saveQuotes()  
 }
+
+function saveQuotes() {
+  localStorage.setItem('quotes', JSON.stringify(quotes))
+}
+
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+
+  fileReader.onload = function (event) {
+
+    const importedQuotes = JSON.parse(event.target.result);
+    quotes.push(...importedQuotes);
+    saveQuotes();
+    alert('Quotes imported successfully!');
+
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
 
 showRandomQuote();
 createAddQuoteForm();
