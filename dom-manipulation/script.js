@@ -59,9 +59,13 @@ function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
 
-  if (text === "" || category === "") return;
+  if (!text || !category) return;
 
   quotes.push({ text, category });
+
+  populateCategories();
+  filterQuotes();
+
   document.getElementById("newQuoteText").value = '';
   document.getElementById("newQuoteCategory").value = '';
 
@@ -109,9 +113,56 @@ function exportToJsonFile() {
 
 document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
 
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+
+  categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+
+  const categories = [...new Set(quotes.map(quote => quote.category))];
+
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  const savedFilter = localStorage.getItem("selectedCategory");
+  if (savedFilter) {
+    categoryFilter.value = savedFilter;
+  }
+}
+
+function displayQuotes(quotesToDisplay) {
+  quoteDisplay.innerHTML = "";
+
+  quotesToDisplay.forEach(quote => {
+    const p = document.createElement("p");
+    p.innerHTML = quote.text;
+    quoteDisplay.appendChild(p);
+  });
+}
 
 
+function filterQuotes() {
+  const selectedCategory = categoryFilter.value;
 
-showRandomQuote();
+  localStorage.setItem("selectedCategory", selectedCategory);
+
+  let filteredQuotes = quotes;
+
+  if (selectedCategory !== "all") {
+    filteredQuotes = quotes.filter(
+      quote => quote.category === selectedCategory
+    );
+  }
+
+  displayQuotes(filteredQuotes);
+}
+
+categoryFilter.addEventListener("change", filterQuotes);
+
+
+populateCategories()
 createAddQuoteForm();
 
