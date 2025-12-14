@@ -86,6 +86,31 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
+function exportToJsonFile() {
+  
+  const jsonString = JSON.stringify(quotes, null, 2);
+
+
+  const blob = new Blob([jsonString], {
+    type: "application/json"
+  });
+
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "quotes.json";
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
+
+
+
 
 showRandomQuote();
 createAddQuoteForm();
