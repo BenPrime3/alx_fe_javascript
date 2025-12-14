@@ -161,7 +161,7 @@ function filterQuotes() {
   displayQuotes(filteredQuotes);
 }
 
-async function fetchServerQuotes() {
+async function fetchQuotesFromServer() {
   const res = await fetch(`${SERVER_URL}?_limit=5`);
   const data = await res.json();
   return data.map(post => ({
@@ -172,7 +172,7 @@ async function fetchServerQuotes() {
 }
 
 async function syncWithServer() {
-  const serverQuotes = await fetchServerQuotes();
+  const serverQuotes = await fetchQuotesFromServer();
   let added = 0;
   let resolved = 0;
 
