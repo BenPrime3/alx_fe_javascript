@@ -201,9 +201,7 @@ async function syncQuotes() {
   populateCategories();
   filterQuotes();
 
-  syncStatus.textContent = conflicts
-    ? "Conflicts resolved using server data."
-    : "Quotes synced successfully.";
+  syncStatus.textContent = conflicts ? "Conflicts resolved using server data." : "Quotes synced with server!";
 
   setTimeout(() => {
     syncStatus.textContent = "";
