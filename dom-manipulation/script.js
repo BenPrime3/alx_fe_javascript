@@ -161,20 +161,19 @@ function filterQuotes() {
   displayQuotes(filteredQuotes);
 }
 
-function fetchQuotesFromServer() {
-  return fetch(API_URL)
-    .then(res => res.json())
-    .then(data =>
-      data.slice(0, 5).map(item => ({
-        id: `server-${item.id}`,
-        text: item.title,
-        category: "server"
-      }))
-    );
+async function fetchQuotesFromServer() {
+  const response = await fetch(API_URL);
+  const data = await response.json();
+
+  return data.slice(0, 5).map(item => ({
+    id: `server-${item.id}`,
+    text: item.title,
+    category: "server"
+  }));
 }
 
-function postQuoteToServer(quote) {
-  return fetch(API_URL, {
+async function postQuoteToServer(quote) {
+  await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -183,29 +182,32 @@ function postQuoteToServer(quote) {
   });
 }
 
-function syncQuotes() {
-  fetchQuotesFromServer().then(serverQuotes => {
-    let conflicts = 0;
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+  let conflicts = 0;
 
-    serverQuotes.forEach(serverQuote => {
-      const index = quotes.findIndex(q => q.id === serverQuote.id);
+  serverQuotes.forEach(serverQuote => {
+    const index = quotes.findIndex(q => q.id === serverQuote.id);
 
-      if (index === -1) {
-        quotes.push(serverQuote);
-      } else {
-        quotes[index] = serverQuote;
-        conflicts++;
-      }
-    });
-
-    saveQuotes();
-    populateCategories();
-    filterQuotes();
-
-    syncStatus.textContent = conflicts ? "Conflicts resolved using server data." : "Quotes synced successfully.";
-
-    setTimeout(() => (syncStatus.textContent = ""), 4000);
+    if (index === -1) {
+      quotes.push(serverQuote);
+    } else {
+      quotes[index] = serverQuote;
+      conflicts++;
+    }
   });
+
+  saveQuotes();
+  populateCategories();
+  filterQuotes();
+
+  syncStatus.textContent = conflicts
+    ? "Conflicts resolved using server data."
+    : "Quotes synced successfully.";
+
+  setTimeout(() => {
+    syncStatus.textContent = "";
+  }, 4000);
 }
 
 categoryFilter.addEventListener("change", filterQuotes);
