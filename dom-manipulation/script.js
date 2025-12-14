@@ -16,6 +16,7 @@ const quotes = JSON.parse(localStorage.getItem('quotes')) || [
 
 const quoteDisplay = document.getElementById("quoteDisplay");
 const quoteButton = document.getElementById("newQuote");
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
 
 function showRandomQuote() {
   const index = Math.floor(Math.random() * quotes.length);
@@ -160,9 +161,51 @@ function filterQuotes() {
   displayQuotes(filteredQuotes);
 }
 
+async function fetchServerQuotes() {
+  const res = await fetch(`${SERVER_URL}?_limit=5`);
+  const data = await res.json();
+  return data.map(post => ({
+    id: `server-${post.id}`,
+    text: post.title,
+    category: "server"
+  }));
+}
+
+async function syncWithServer() {
+  const serverQuotes = await fetchServerQuotes();
+  let added = 0;
+  let resolved = 0;
+
+  serverQuotes.forEach(sq => {
+    const index = quotes.findIndex(q => q.id === sq.id);
+    if (index === -1) {
+      quotes.push(sq);
+      added++;
+    } else {
+      if (
+        quotes[index].text !== sq.text ||
+        quotes[index].category !== sq.category
+      ) {
+        quotes[index] = sq;
+        resolved++;
+      }
+    }
+  });
+
+  if (added || resolved) {
+    saveQuotes();
+    populateCategories();
+    filterQuotes();
+    syncStatus.textContent = `Sync complete. ${added} added, ${resolved} resolved.`;
+    setTimeout(() => (syncStatus.textContent = ""), 5000);
+  }
+}
+
 categoryFilter.addEventListener("change", filterQuotes);
 
 
-populateCategories()
+populateCategories();
 createAddQuoteForm();
+syncWithServer();
+setInterval(syncWithServer, 15000);
 
