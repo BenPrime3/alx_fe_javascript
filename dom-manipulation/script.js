@@ -16,7 +16,7 @@ const quotes = JSON.parse(localStorage.getItem('quotes')) || [
 
 const quoteDisplay = document.getElementById("quoteDisplay");
 const quoteButton = document.getElementById("newQuote");
-const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
+const API_URL = "https://jsonplaceholder.typicode.com/posts";
 
 function showRandomQuote() {
   const index = Math.floor(Math.random() * quotes.length);
@@ -161,44 +161,51 @@ function filterQuotes() {
   displayQuotes(filteredQuotes);
 }
 
-async function fetchQuotesFromServer() {
-  const res = await fetch(`${SERVER_URL}?_limit=5`);
-  const data = await res.json();
-  return data.map(post => ({
-    id: `server-${post.id}`,
-    text: post.title,
-    category: "server"
-  }));
+function fetchQuotesFromServer() {
+  return fetch(API_URL)
+    .then(res => res.json())
+    .then(data =>
+      data.slice(0, 5).map(item => ({
+        id: `server-${item.id}`,
+        text: item.title,
+        category: "server"
+      }))
+    );
 }
 
-async function syncWithServer() {
-  const serverQuotes = await fetchQuotesFromServer();
-  let added = 0;
-  let resolved = 0;
-
-  serverQuotes.forEach(sq => {
-    const index = quotes.findIndex(q => q.id === sq.id);
-    if (index === -1) {
-      quotes.push(sq);
-      added++;
-    } else {
-      if (
-        quotes[index].text !== sq.text ||
-        quotes[index].category !== sq.category
-      ) {
-        quotes[index] = sq;
-        resolved++;
-      }
-    }
+function postQuoteToServer(quote) {
+  return fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(quote)
   });
+}
 
-  if (added || resolved) {
+function syncQuotes() {
+  fetchQuotesFromServer().then(serverQuotes => {
+    let conflicts = 0;
+
+    serverQuotes.forEach(serverQuote => {
+      const index = quotes.findIndex(q => q.id === serverQuote.id);
+
+      if (index === -1) {
+        quotes.push(serverQuote);
+      } else {
+        quotes[index] = serverQuote;
+        conflicts++;
+      }
+    });
+
     saveQuotes();
     populateCategories();
     filterQuotes();
-    syncStatus.textContent = `Sync complete. ${added} added, ${resolved} resolved.`;
-    setTimeout(() => (syncStatus.textContent = ""), 5000);
-  }
+
+    syncStatus.textContent = conflicts ? "Conflicts resolved using server data." : "Quotes synced successfully.";
+
+    setTimeout(() => (syncStatus.textContent = ""), 4000);
+  });
 }
 
 categoryFilter.addEventListener("change", filterQuotes);
@@ -206,6 +213,6 @@ categoryFilter.addEventListener("change", filterQuotes);
 
 populateCategories();
 createAddQuoteForm();
-syncWithServer();
-setInterval(syncWithServer, 15000);
+syncQuotes();
+setInterval(syncQuotes, 15000);
 
