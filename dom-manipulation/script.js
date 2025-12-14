@@ -28,6 +28,7 @@ quoteButton.addEventListener("click", showRandomQuote);
 
 
 function createAddQuoteForm() {
+  const lineBreak = document.createElement("br")
   const formDiv = document.createElement("div");
 
   const quoteInput = document.createElement("input");
@@ -45,6 +46,7 @@ function createAddQuoteForm() {
 
   addButton.addEventListener("click", addQuote);
 
+  formDiv.appendChild(lineBreak);
   formDiv.appendChild(quoteInput);
   formDiv.appendChild(categoryInput);
   formDiv.appendChild(addButton);
@@ -60,6 +62,8 @@ function addQuote() {
   if (text === "" || category === "") return;
 
   quotes.push({ text, category });
+  document.getElementById("newQuoteText").value = '';
+  document.getElementById("newQuoteCategory").value = '';
 
   showRandomQuote();
 }
